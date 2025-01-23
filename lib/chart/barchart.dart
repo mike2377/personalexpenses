@@ -54,8 +54,8 @@ class Chart extends StatelessWidget {
                   FittedBox(
                     child: Text(
                       maxSpending == 0
-                          ? '\$'
-                          : '\$${dayAmount.toStringAsFixed(0)}',
+                          ? 'F'
+                          : '${dayAmount.toStringAsFixed(0)}F',
                       style: const TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),

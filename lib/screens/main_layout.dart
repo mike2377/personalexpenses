@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:personalexpensesapp/screens/home.dart';
 import 'package:personalexpensesapp/screens/dashboard.dart';
-import 'package:personalexpensesapp/screens/settings.dart';
+import 'package:personalexpensesapp/screens/settings_screen.dart'; // Page Settings
+import 'package:personalexpensesapp/screens/account_screen.dart'; // Page Account
 import 'package:personalexpensesapp/screens/add_screen.dart';
+import 'package:personalexpensesapp/theme_provider.dart';
 
 class MainLayout extends StatefulWidget {
   const MainLayout({super.key});
@@ -14,15 +17,23 @@ class MainLayout extends StatefulWidget {
 class _MainLayoutState extends State<MainLayout> {
   int _selectedIndex = 0;
 
-  // Clé globale pour accéder à l'état de MyHomePage
+  // Define a GlobalKey for MyHomePage
   final GlobalKey<MyHomePageState> _homePageKey = GlobalKey<MyHomePageState>();
 
-  // Liste des pages de l'application
-  final List<Widget> _pages = [
-    MyHomePage(key: GlobalKey<MyHomePageState>()),
-    const DashboardScreen(),
-    const SettingsScreen(),
-  ];
+  // Declare the list of pages without initializing it
+  late final List<Widget> _pages;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize the list of pages in the constructor body
+    _pages = [
+      MyHomePage(key: _homePageKey), // Pass the key to MyHomePage
+      const DashboardScreen(),
+      const SettingsScreen(), // Page Settings
+      const AccountScreen(), // Page Account
+    ];
+  }
 
   void _onItemTapped(int index) {
     setState(() {
@@ -32,7 +43,39 @@ class _MainLayoutState extends State<MainLayout> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Colors.amber, // Couleur de fond de l'AppBar
+        title: Text(
+          _selectedIndex == 0
+              ? 'Personal Expenses'
+              : _selectedIndex == 1
+                  ? 'Dashboard'
+                  : _selectedIndex == 2
+                      ? 'Settings'
+                      : 'Account',
+          style: const TextStyle(
+            color: Colors.black, // Texte sombre
+            fontFamily: 'Times New Roman', // Police Times New Roman
+            fontSize: 20, // Taille de la police
+            fontWeight: FontWeight.bold, // Texte en gras
+          ),
+        ),
+        actions: [
+          CircleAvatar(
+            backgroundImage: themeProvider.profilePhotoUrl != null
+                ? NetworkImage(themeProvider.profilePhotoUrl!)
+                : null,
+            radius: 20,
+            child: themeProvider.profilePhotoUrl == null
+                ? const Icon(Icons.person, size: 20) // Icône par défaut
+                : null,
+          ),
+          const SizedBox(width: 10),
+        ],
+      ),
       body: _pages[_selectedIndex],
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -43,11 +86,8 @@ class _MainLayoutState extends State<MainLayout> {
               MaterialPageRoute(
                 builder: (ctx) => AddScreen(
                   addTransaction: (title, amount, date) {
-                    // Appeler la méthode addTransaction de MyHomePage
-                    final homePage = _pages[_selectedIndex] as MyHomePage;
-                    (homePage.key as GlobalKey<MyHomePageState>)
-                        .currentState
-                        ?.addTransaction(title, amount, date);
+                    // Appeler la méthode addTransaction de MyHomePageState
+                    _homePageKey.currentState?.addTransaction(title, amount, date);
                   },
                 ),
               ),
@@ -72,16 +112,15 @@ class _MainLayoutState extends State<MainLayout> {
               onPressed: () => _onItemTapped(1),
               color: _selectedIndex == 1 ? Colors.purple : Colors.grey,
             ),
-            const SizedBox(width: 40), // Espace pour le bouton flottant
             IconButton(
               icon: const Icon(Icons.settings),
-              onPressed: () => _onItemTapped(2),
+              onPressed: () => _onItemTapped(2), // Page Settings
               color: _selectedIndex == 2 ? Colors.purple : Colors.grey,
             ),
             IconButton(
               icon: const Icon(Icons.account_circle),
-              onPressed: () => _onItemTapped(2),
-              color: _selectedIndex == 2 ? Colors.purple : Colors.grey,
+              onPressed: () => _onItemTapped(3), // Page Account
+              color: _selectedIndex == 3 ? Colors.purple : Colors.grey,
             ),
           ],
         ),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:provider/provider.dart';
 import 'package:personalexpensesapp/screens/main_layout.dart';
+import 'package:personalexpensesapp/theme_provider.dart'; // Importez ThemeProvider
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -28,6 +30,14 @@ class _AuthScreenState extends State<AuthScreen> {
           idToken: googleSignInAuthentication.idToken,
         );
         await auth.signInWithCredential(credential);
+
+        // Récupérer l'URL de la photo de profil
+        final User? user = auth.currentUser;
+        if (user != null && user.photoURL != null) {
+          // Stocker l'URL de la photo de profil dans ThemeProvider
+          Provider.of<ThemeProvider>(context, listen: false).setProfilePhotoUrl(user.photoURL!);
+        }
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => const MainLayout()),

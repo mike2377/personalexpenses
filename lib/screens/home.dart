@@ -45,7 +45,7 @@ class MyHomePageState extends State<MyHomePage> {
     final user = _auth.currentUser;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Personal Expenses'),
+        // title: const Text('Personal Expenses'),
       ),
       body: user == null
           ? const Center(child: Text('Please sign in to view transactions.'))
@@ -86,7 +86,7 @@ class MyHomePageState extends State<MyHomePage> {
                                   padding: const EdgeInsets.all(5),
                                   child: FittedBox(
                                     child: Text(
-                                      '\$${amount.toStringAsFixed(2)}',
+                                      '${amount.toStringAsFixed(0)} F',
                                       style: const TextStyle(
                                         color: Colors.white,
                                         fontWeight: FontWeight.bold,

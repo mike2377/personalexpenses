@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:intl/intl.dart';
-// import 'package:personalexpensesapp/chart/barchart.dart';
 import 'package:personalexpensesapp/widgets/chart.dart';
 
 class DashboardScreen extends StatelessWidget {
@@ -16,7 +15,7 @@ class DashboardScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Dashboard'),
+        // title: const Text('Dashboard'),
       ),
       body: user == null
           ? const Center(child: Text('Please sign in to view the dashboard.'))
@@ -37,7 +36,13 @@ class DashboardScreen extends StatelessWidget {
                   children: [
                     Chart(recentTransactions: transactions),
                     Expanded(
-                      child: ListView.builder(
+                      child: GridView.builder(
+                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2, // Nombre de colonnes dans la grille
+                          crossAxisSpacing: 10, // Espacement horizontal entre les éléments
+                          mainAxisSpacing: 10, // Espacement vertical entre les éléments
+                          childAspectRatio: 1.5, // Ratio largeur/hauteur des éléments
+                        ),
                         itemCount: transactions.length,
                         itemBuilder: (context, index) {
                           final t = transactions[index];
@@ -46,35 +51,41 @@ class DashboardScreen extends StatelessWidget {
                           final date = (t['date'] as Timestamp).toDate();
 
                           return Card(
-                            margin: const EdgeInsets.symmetric(
-                              horizontal: 10,
-                              vertical: 5,
+                            elevation: 5,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
                             ),
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                radius: 30,
-                                backgroundColor: Colors.purple,
-                                child: Padding(
-                                  padding: const EdgeInsets.all(5),
-                                  child: FittedBox(
-                                    child: Text(
-                                      '\$${amount.toStringAsFixed(2)}',
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.bold,
-                                      ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(10),
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    title,
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    '${amount.toStringAsFixed(0)} Fcfa',
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      color: Colors.purple,
                                     ),
                                   ),
-                                ),
+                                  const SizedBox(height: 10),
+                                  Text(
+                                    DateFormat('MMM dd, yyyy').format(date),
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.grey,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              title: Text(
-                                title,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 20,
-                                ),
-                              ),
-                              subtitle: Text(DateFormat('MMM dd, yyyy').format(date)),
                             ),
                           );
                         },

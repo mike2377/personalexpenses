@@ -74,4 +74,17 @@ class FirebaseService {
   Future<void> signOut() async {
     await _auth.signOut();
   }
+
+  Future<void> updateUserProfile(String name, String email) async {
+  final user = FirebaseAuth.instance.currentUser;
+  if (user != null) {
+    await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .update({
+      'name': name,
+      'email': email,
+    });
+  }
+}
 }
