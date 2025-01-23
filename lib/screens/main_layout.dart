@@ -14,8 +14,12 @@ class MainLayout extends StatefulWidget {
   State<MainLayout> createState() => _MainLayoutState();
 }
 
-class _MainLayoutState extends State<MainLayout> {
+class _MainLayoutState extends State<MainLayout> with TickerProviderStateMixin {
   int _selectedIndex = 0;
+
+  // Déclarez les champs sans `late` et initialisez-les à null
+  AnimationController? _animationController;
+  Animation<double>? _animation;
 
   // Define a GlobalKey for MyHomePage
   final GlobalKey<MyHomePageState> _homePageKey = GlobalKey<MyHomePageState>();
@@ -26,28 +30,67 @@ class _MainLayoutState extends State<MainLayout> {
   @override
   void initState() {
     super.initState();
-    // Initialize the list of pages in the constructor body
+
+    // Initialize the list of pages
     _pages = [
       MyHomePage(key: _homePageKey), // Pass the key to MyHomePage
       const DashboardScreen(),
       const SettingsScreen(), // Page Settings
       const AccountScreen(), // Page Account
     ];
+
+    // Initialize animation controller and animation
+    _initializeAnimations();
+  }
+
+  void _initializeAnimations() {
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+
+    _animation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(
+        parent: _animationController!,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    // Start animation
+    _animationController!.forward();
+  }
+
+  @override
+  void dispose() {
+    // Dispose of the animation controller
+    _animationController?.dispose();
+    super.dispose();
   }
 
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
     });
+
+    // Restart animation when switching pages
+    _animationController?.reset();
+    _animationController?.forward();
   }
 
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
 
+    // Vérifiez si l'animation est initialisée
+    if (_animation == null || _animationController == null) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.amber, // Couleur de fond de l'AppBar
+        backgroundColor: const Color.fromARGB(255, 27, 86, 90), // Couleur de fond de l'AppBar
         title: Text(
           _selectedIndex == 0
               ? 'Personal Expenses'
@@ -59,7 +102,7 @@ class _MainLayoutState extends State<MainLayout> {
           style: const TextStyle(
             color: Colors.black, // Texte sombre
             fontFamily: 'Times New Roman', // Police Times New Roman
-            fontSize: 20, // Taille de la police
+            fontSize: 25, // Taille de la police
             fontWeight: FontWeight.bold, // Texte en gras
           ),
         ),
@@ -76,11 +119,28 @@ class _MainLayoutState extends State<MainLayout> {
           const SizedBox(width: 10),
         ],
       ),
-      body: _pages[_selectedIndex],
-      floatingActionButton: FloatingActionButton(
+      body: FadeTransition(
+        opacity: _animation!,
+        child: _pages[_selectedIndex],
+      ),
+      floatingActionButton: _buildFloatingActionButton(),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      bottomNavigationBar: _buildCustomBottomNavigationBar(),
+    );
+  }
+
+  // Bouton flottant personnalisé avec effet de rebond
+  Widget _buildFloatingActionButton() {
+    return ScaleTransition(
+      scale: _animation!,
+      child: FloatingActionButton(
         onPressed: () {
           // Ajouter une nouvelle transaction
           if (_selectedIndex == 0) {
+            // Animation de rebond
+            _animationController?.reset();
+            _animationController?.forward();
+
             // Ouvrir le formulaire d'ajout de transaction
             Navigator.of(context).push(
               MaterialPageRoute(
@@ -94,33 +154,73 @@ class _MainLayoutState extends State<MainLayout> {
             );
           }
         },
-        child: const Icon(Icons.add),
+        backgroundColor: const Color.fromARGB(255, 27, 86, 90), // Couleur du bouton
+        child: const Icon(
+          Icons.add,
+          color: Colors.white,
+          size: 30,
+        ),
+        shape: const CircleBorder(), // Rendre le bouton circulaire
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+    );
+  }
+
+  // Modèle personnalisé pour la barre de navigation
+  Widget _buildCustomBottomNavigationBar() {
+    return Container(
+      height: 80, // Hauteur de la barre de navigation
+      decoration: BoxDecoration(
+        color: Colors.white, // Couleur de fond
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.1),
+            blurRadius: 10,
+            offset: const Offset(0, -2),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildBottomNavigationItem(0, Icons.home, 'Home'),
+          _buildBottomNavigationItem(1, Icons.dashboard, 'Dashboard'),
+          const SizedBox(width: 48), // Espace pour le bouton flottant
+          _buildBottomNavigationItem(2, Icons.settings, 'Settings'),
+          _buildBottomNavigationItem(3, Icons.account_circle, 'Account'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBottomNavigationItem(int index, IconData icon, String label) {
+    final isSelected = _selectedIndex == index;
+
+    return InkWell(
+      onTap: () => _onItemTapped(index),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color.fromARGB(255, 27, 86, 90).withOpacity(0.1) : Colors.transparent,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            IconButton(
-              icon: const Icon(Icons.home),
-              onPressed: () => _onItemTapped(0),
-              color: _selectedIndex == 0 ? Colors.purple : Colors.grey,
+            Icon(
+              icon,
+              color: isSelected ? const Color.fromARGB(255, 27, 86, 90) : Colors.grey,
+              size: 28,
             ),
-            IconButton(
-              icon: const Icon(Icons.dashboard),
-              onPressed: () => _onItemTapped(1),
-              color: _selectedIndex == 1 ? Colors.purple : Colors.grey,
-            ),
-            IconButton(
-              icon: const Icon(Icons.settings),
-              onPressed: () => _onItemTapped(2), // Page Settings
-              color: _selectedIndex == 2 ? Colors.purple : Colors.grey,
-            ),
-            IconButton(
-              icon: const Icon(Icons.account_circle),
-              onPressed: () => _onItemTapped(3), // Page Account
-              color: _selectedIndex == 3 ? Colors.purple : Colors.grey,
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? const Color.fromARGB(255, 27, 86, 90) : Colors.grey,
+                fontSize: 12,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
             ),
           ],
         ),
