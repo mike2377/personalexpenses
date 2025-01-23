@@ -2,128 +2,92 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class AddScreen extends StatefulWidget {
+  final void Function(String title, double amount, DateTime date) addTransaction;
+  const AddScreen({super.key, required this.addTransaction});
 
-    final void Function(String title, double amount, DateTime date) addTransaction;
-    const AddScreen({super.key, required this.addTransaction});
-
-    @override
-    State<AddScreen> createState() => _AddScreenState();
+  @override
+  State<AddScreen> createState() => _AddScreenState();
 }
 
 class _AddScreenState extends State<AddScreen> {
+  final _titleController = TextEditingController();
+  final _amountController = TextEditingController();
+  DateTime? _selectedDate;
 
-    //variable por controler le title, amount, date
-
-    final _title = TextEditingController();
-    final _amount = TextEditingController();
-    DateTime? _selectedDate;
-
-    void _valider() {
-        
-        //verifier en envoyer les donner du formulaire
-        final title = _title.text;
-        final amount = double.tryParse(_amount.text);
-        if (title.isEmpty || amount == null || _selectedDate == null) {
-            return;
-        }
-
-        //rei,itialise le formlaire et le fermer 
-        widget.addTransaction(title, amount, _selectedDate!);
-        _title.clear();
-        _amount.clear();
-        _selectedDate = null;
-        Navigator.pop(context);
-
+  void _submitTransaction() {
+    final title = _titleController.text;
+    final amount = double.tryParse(_amountController.text);
+    if (title.isEmpty || amount == null || _selectedDate == null) {
+      return;
     }
 
-    void datePicker(){
-        showDatePicker(
-            context: context,
-            initialDate: _selectedDate,
-            //date a partir de 2023
-            firstDate: DateTime(2023),
-            //date actuel
-            lastDate: DateTime.now(),
-        ).then((value) {
-          //recuper la date selectionner
-            if (value!= null) {
-                _selectedDate = value;
-            }
-        });
-    }
+    widget.addTransaction(title, amount, _selectedDate!);
+    Navigator.pop(context);
+  }
 
+  void _presentDatePicker() {
+    showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2023),
+      lastDate: DateTime.now(),
+    ).then((pickedDate) {
+      if (pickedDate == null) {
+        return;
+      }
+      setState(() {
+        _selectedDate = pickedDate;
+      });
+    });
+  }
 
-    @override
-    Widget build(BuildContext context) {
-      //formulaire pour ajout de transactions
-      return Card(
-        elevation: 5,
-        child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-
-                //textfield pour title et amont
-                TextField(
-                    controller: _title,
-                    decoration: const InputDecoration(labelText: 'Title'),
-                ),
-                TextField(
-                    controller: _amount,
-                    decoration: const InputDecoration(labelText: 'Amount'
-                    ),
-
-                ),
-                const Spacer(),
-
-                //ligne pour le choix de la date
-                Row(
-                    children: [
-                    const Text('Date Chosen '),
-                    Expanded(
-
-                      //permet de selectinner la date par la fonction datePicker
-                        child: GestureDetector(
-                            onTap: datePicker,
-
-                            //style du bouton permettant de selectionner la date
-                            child: Text(
-                                _selectedDate != null
-                                ? DateFormat('dd/MM/yyyy').format(_selectedDate!) // Formatage de la date
-                                : 'Choose Date',
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.purple,
-                                ),
-                                textAlign: TextAlign.end,
-                            ),
-                            
-                        ),
-                    ),
-                    ],
-                ),
-                const SizedBox(height: 16.0),
-                
-                //bouton pour ajouter les transactions
-                ElevatedButton(
-                    onPressed: _valider,
-                    style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.purple,
-                    ),
-                    child: const Text(
-                        'Add Transaction',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 18.0,
-                            fontWeight: FontWeight.bold,
-                        ),
-                    ),
-                ),
-                ],
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Add Transaction'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            TextField(
+              controller: _titleController,
+              decoration: const InputDecoration(labelText: 'Title'),
             ),
+            TextField(
+              controller: _amountController,
+              decoration: const InputDecoration(labelText: 'Amount'),
+              keyboardType: TextInputType.number,
+            ),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    _selectedDate == null
+                        ? 'No Date Chosen!'
+                        : 'Picked Date: ${DateFormat.yMd().format(_selectedDate!)}',
+                  ),
+                ),
+                TextButton(
+                  onPressed: _presentDatePicker,
+                  child: const Text(
+                    'Choose Date',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _submitTransaction,
+              child: const Text('Add Transaction'),
+            ),
+          ],
         ),
-
-      );
-    }
+      ),
+    );
+  }
 }
