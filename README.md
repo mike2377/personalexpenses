@@ -120,9 +120,30 @@ Ce projet est sous licence [MIT](LICENSE).
 
 ---
 
+### Auther
+  [Foko Junior](https://github.com/FokoJunior)
+
+  [Mickael Ivan](https://github.com/mike2377)
+
 ### Contact
 
 Pour toute question ou suggestion, contactez-nous à :
-- **Email** : benitojunior2022@gmail.com** mike2377@gmail.com**
-- **GitHub** : [PersonalExpensesApp](https://github.com/username/personalexpensesapp)
+- **Email** :<br>           
+        [ benitojunior2022@gmail.com](benitojunior2022@gmail.com) <br>
+        [mike2377@gmail.com](mike2377@gmail.com)
+
+
+- **GitHub** : [PersonalExpensesApp](https://github.com/mike2377/personalexpenses)
+
+
+### Demo Screenshots
+<video src="assets/img/video.mp4" target="_blank" height="500" width="250"/>
+
+<img src="assets/img/1.jpg" height="500" width="250">
+<img src="assets/img/2.jpg" height="500" width="250">
+<img src="assets/img/3.jpg" height="500" width="250">
+<img src="assets/img/4.jpg" height="500" width="250">
+<img src="assets/img/5.jpg" height="500" width="250">
+<img src="assets/img/6.jpg" height="500" width="250">
+<img src="assets/img/7.jpg" height="500" width="250">
 
