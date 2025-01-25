@@ -109,13 +109,13 @@ flutter:
   # see https://flutter.dev/to/font-from-package
 
 
-# flutter_icons:
-#   android: true
-#   ios: true
-#   image_path: "assets/images/app_logo.png"
+flutter_icons:
+  android: true
+  ios: true
+  image_path: assets/images/app_logo.png
 
-# flutter_native_splash:
-#   color: "#FFFFFF"  # Couleur de fond du splash screen
-#   image: "assets/images/app_logo.png"  # Votre logo
-#   android: true
-#   ios: true
+flutter_native_splash:
+  color: "#FFFFFF"  # Couleur de fond du splash screen
+  image: assets/images/app_logo.png  # Votre logo
+  android: true
+  ios: true
