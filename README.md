@@ -138,7 +138,7 @@ Pour toute question ou suggestion, contactez-nous à :
 
 ### Demo Screenshots
 
-<img src="assets/img/1.jpg" height="500" width="250"> <img src="assets/img/2.jpg" height="500" width="250">
+<img src="assets/img/1.png" height="500" width="250"> <img src="assets/img/2.jpg" height="500" width="250">
 <img src="assets/img/3.jpg" height="500" width="250">
 <img src="assets/img/4.jpg" height="500" width="250">
 <img src="assets/img/5.jpg" height="500" width="250">
