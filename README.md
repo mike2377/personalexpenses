@@ -148,4 +148,4 @@ Pour toute question ou suggestion, contactez-nous à :
 
 
 ### Demo Video
-<video src="assets/img/video.mp4" target="_blank" height="500" width="250"/>
+<video src="assets/img/video.mp4" controls target="_blank" height="500" width="250"/>
