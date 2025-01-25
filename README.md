@@ -137,7 +137,6 @@ Pour toute question ou suggestion, contactez-nous à :
 
 
 ### Demo Screenshots
-<video src="assets/img/video.mp4" target="_blank" height="500" width="250"/>
 
 <img src="assets/img/1.jpg" height="500" width="250">
 <img src="assets/img/2.jpg" height="500" width="250">
@@ -147,3 +146,6 @@ Pour toute question ou suggestion, contactez-nous à :
 <img src="assets/img/6.jpg" height="500" width="250">
 <img src="assets/img/7.jpg" height="500" width="250">
 
+
+### Demo Video
+<video src="assets/img/video.mp4" target="_blank" height="500" width="250"/>
