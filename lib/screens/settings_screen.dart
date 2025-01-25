@@ -11,19 +11,20 @@ class SettingsScreen extends StatelessWidget {
     final themeProvider = Provider.of<ThemeProvider>(context);
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Paramètres',
-          style: TextStyle(
-            fontFamily: 'Times New Roman', // Police Times New Roman
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-      ),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
+          // Titre déplacé dans le body
+          const Text(
+            'Paramètres',
+            style: TextStyle(
+              fontFamily: 'Times New Roman', // Police Times New Roman
+              fontWeight: FontWeight.bold,
+              fontSize: 24, // Taille de la police
+            ),
+          ),
+          const SizedBox(height: 20),
+
           // Section Apparence
           _buildSectionTitle('Apparence').animate().fadeIn(duration: 500.ms).slideX(begin: -0.5),
           Card(

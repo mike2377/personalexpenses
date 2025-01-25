@@ -44,7 +44,6 @@ class _ChartState extends State<Chart> with TickerProviderStateMixin {
 
       // Démarrer l'animation avec un délai basé sur l'index
       Future.delayed(Duration(milliseconds: i * 150), () {
-        // Délai réduit
         if (mounted) {
           controller.forward();
         }
@@ -80,6 +79,7 @@ class _ChartState extends State<Chart> with TickerProviderStateMixin {
       return {
         'day': DateFormat.E().format(weekDay).substring(0, 1), // Initiale du jour
         'amount': totalSum,
+        'fullDay': DateFormat.E().format(weekDay), // Nom complet du jour
       };
     });
   }
@@ -100,76 +100,90 @@ class _ChartState extends State<Chart> with TickerProviderStateMixin {
       ),
       child: Padding(
         padding: const EdgeInsets.all(10),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: groupedTransactionValues.asMap().entries.map((entry) {
-            final index = entry.key; // Index de l'élément
-            final data = entry.value; // Données de l'élément
-            final dayAmount = data['amount'] as double;
-            final barHeightFactor =
-                maxSpending == 0 ? 0.0 : dayAmount / maxSpending;
+        child: Column(
+          children: [
+            // Résumé des dépenses
+            _buildSummary(),
+            const SizedBox(height: 10),
+            // Légende des couleurs
+            _buildLegend(),
+            const SizedBox(height: 10),
+            // Graphique
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: groupedTransactionValues.asMap().entries.map((entry) {
+                final index = entry.key; // Index de l'élément
+                final data = entry.value; // Données de l'élément
+                final dayAmount = data['amount'] as double;
+                final barHeightFactor =
+                    maxSpending == 0 ? 0.0 : dayAmount / maxSpending;
 
-            return Flexible(
-              fit: FlexFit.tight,
-              child: Column(
-                children: [
-                  FittedBox(
-                    child: Text(
-                      maxSpending == 0
-                          ? '0 F'
-                          : '${dayAmount.toStringAsFixed(0)} F',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                        color: Color.fromARGB(255, 27, 86, 90),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  AnimatedBuilder(
-                    animation: _animations[index],
-                    builder: (context, child) {
-                      return Container(
-                        height: 100 * _animations[index].value,
-                        width: 15,
-                        decoration: BoxDecoration(
-                          border: Border.all(color: Colors.grey, width: 1.0),
-                          borderRadius: BorderRadius.circular(10),
-                          color: Colors.grey[200],
-                        ),
-                        child: FractionallySizedBox(
-                          heightFactor: barHeightFactor,
-                          alignment: Alignment.bottomCenter,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: _getBarColor(dayAmount),
-                              borderRadius: BorderRadius.circular(10),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.purple.withOpacity(0.3),
-                                  blurRadius: 5,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
+                return Flexible(
+                  fit: FlexFit.tight,
+                  child: MouseRegion(
+                    onEnter: (_) => _showTooltip(context, data),
+                    child: Column(
+                      children: [
+                        FittedBox(
+                          child: Text(
+                            maxSpending == 0
+                                ? '0 F'
+                                : '${dayAmount.toStringAsFixed(0)} F',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12,
+                              color: Color.fromARGB(255, 27, 86, 90),
                             ),
                           ),
                         ),
-                      );
-                    },
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    data['day'] as String,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      color: Colors.grey,
+                        const SizedBox(height: 4),
+                        AnimatedBuilder(
+                          animation: _animations[index],
+                          builder: (context, child) {
+                            return Container(
+                              height: 100 * _animations[index].value,
+                              width: 15,
+                              decoration: BoxDecoration(
+                                border: Border.all(color: Colors.grey, width: 1.0),
+                                borderRadius: BorderRadius.circular(10),
+                                color: Colors.grey[200],
+                              ),
+                              child: FractionallySizedBox(
+                                heightFactor: barHeightFactor,
+                                alignment: Alignment.bottomCenter,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    color: _getBarColor(dayAmount),
+                                    borderRadius: BorderRadius.circular(10),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.purple.withOpacity(0.3),
+                                        blurRadius: 5,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          data['day'] as String,
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                ],
-              ),
-            );
-          }).toList(),
+                );
+              }).toList(),
+            ),
+          ],
         ),
       ),
     );
@@ -186,5 +200,115 @@ class _ChartState extends State<Chart> with TickerProviderStateMixin {
     } else {
       return const Color.fromARGB(255, 194, 16, 16); // Montant élevé
     }
+  }
+
+  // Fonction pour afficher un résumé des dépenses
+  Widget _buildSummary() {
+    final totalSpending = groupedTransactionValues.fold(0.0, (sum, item) {
+      return sum + (item['amount'] as double);
+    });
+
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.grey[200],
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const Text(
+            'Total des dépenses cette semaine :',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 16,
+              color: Colors.black87,
+            ),
+          ),
+          Text(
+            '${totalSpending.toStringAsFixed(0)} F',
+            style: const TextStyle(
+              fontWeight: FontWeight.bold,
+              fontSize: 18,
+              color: Color.fromARGB(255, 27, 86, 90),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Fonction pour afficher une légende des couleurs
+  Widget _buildLegend() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceAround,
+      children: [
+        _buildLegendItem('Faible', const Color.fromARGB(255, 12, 202, 43)),
+        _buildLegendItem('Moyen', const Color.fromARGB(255, 228, 213, 8)),
+        _buildLegendItem('Élevé', const Color.fromARGB(255, 194, 16, 16)),
+      ],
+    );
+  }
+
+  // Fonction pour construire un élément de légende
+  Widget _buildLegendItem(String label, Color color) {
+    return Row(
+      children: [
+        Container(
+          width: 10,
+          height: 10,
+          decoration: BoxDecoration(
+            color: color,
+            borderRadius: BorderRadius.circular(5),
+          ),
+        ),
+        const SizedBox(width: 5),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 12,
+            color: Colors.grey,
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Fonction pour afficher une infobulle au survol
+  void _showTooltip(BuildContext context, Map<String, Object> data) {
+    final day = data['fullDay'] as String;
+    final amount = data['amount'] as double;
+
+    final overlay = Overlay.of(context);
+    final overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: 100, // Ajustez la position selon vos besoins
+        left: 100, // Ajustez la position selon vos besoins
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.8),
+              borderRadius: BorderRadius.circular(5),
+            ),
+            child: Text(
+              '$day: ${amount.toStringAsFixed(0)} F',
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 12,
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    overlay.insert(overlayEntry);
+
+    // Supprimer l'infobulle après un délai
+    Future.delayed(const Duration(seconds: 2), () {
+      overlayEntry.remove();
+    });
   }
 }

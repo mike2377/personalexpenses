@@ -1,5 +1,5 @@
 name: personalexpensesapp
-description: "A new Flutter project."
+description: "Une application de gestion de dépenses personnelles."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -34,7 +34,9 @@ dependencies:
   firebase_auth: ^5.4.1
   cloud_firestore: ^5.3.0
   google_sign_in: ^6.1.0
-  flutter_local_notifications:
+  flutter_local_notifications: ^18.0.1
+  shared_preferences: ^2.2.2
+  syncfusion_flutter_charts: ^28.1.40
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -54,6 +56,9 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^4.0.0
+  flutter_launcher_icons: ^0.13.1
+  flutter_native_splash: ^2.3.1
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -71,6 +76,7 @@ flutter:
         - asset: fonts/TimesNewRoman.ttf
   assets:
     - assets/images/google_logo.png
+    - assets/images/app_logo.png
   # To add assets to your application, add an assets section, like this:
   # assets:
   #   - images/a_dot_burr.jpeg
@@ -101,3 +107,15 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+
+
+# flutter_icons:
+#   android: true
+#   ios: true
+#   image_path: "assets/images/app_logo.png"
+
+# flutter_native_splash:
+#   color: "#FFFFFF"  # Couleur de fond du splash screen
+#   image: "assets/images/app_logo.png"  # Votre logo
+#   android: true
+#   ios: true

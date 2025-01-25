@@ -28,23 +28,16 @@ class AccountScreen extends StatelessWidget {
     );
 
     if (confirm == true) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(
-          child: CircularProgressIndicator(), // Indicateur de chargement
-        ),
-      );
+      _showLoadingDialog(context); // Afficher l'indicateur de chargement
 
       try {
         await FirebaseAuth.instance.signOut();
         Navigator.of(context).pop(); // Fermer l'indicateur de chargement
-        Navigator.of(context).pushReplacementNamed('/login');
+        // Rediriger vers l'écran de connexion et supprimer toutes les routes précédentes
+        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
       } catch (e) {
         Navigator.of(context).pop(); // Fermer l'indicateur de chargement
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur lors de la déconnexion: $e')),
-        );
+        _showErrorSnackBar(context, 'Erreur lors de la déconnexion: $e');
       }
     }
   }
@@ -53,16 +46,18 @@ class AccountScreen extends StatelessWidget {
   void _changePassword(BuildContext context) async {
     final user = FirebaseAuth.instance.currentUser;
     if (user != null && user.email != null) {
+      _showLoadingDialog(context); // Afficher l'indicateur de chargement
+
       try {
         await FirebaseAuth.instance.sendPasswordResetEmail(email: user.email!);
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Un email de réinitialisation a été envoyé.')),
-        );
+        Navigator.of(context).pop(); // Fermer l'indicateur de chargement
+        _showSuccessSnackBar(context, 'Un email de réinitialisation a été envoyé.');
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur lors de l\'envoi de l\'email: $e')),
-        );
+        Navigator.of(context).pop(); // Fermer l'indicateur de chargement
+        _showErrorSnackBar(context, 'Erreur lors de l\'envoi de l\'email: $e');
       }
+    } else {
+      _showErrorSnackBar(context, 'Aucun utilisateur connecté.');
     }
   }
 
@@ -87,26 +82,49 @@ class AccountScreen extends StatelessWidget {
     );
 
     if (confirm == true) {
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(
-          child: CircularProgressIndicator(), // Indicateur de chargement
-        ),
-      );
+      _showLoadingDialog(context); // Afficher l'indicateur de chargement
 
       try {
         final user = FirebaseAuth.instance.currentUser;
         await user?.delete();
         Navigator.of(context).pop(); // Fermer l'indicateur de chargement
-        Navigator.of(context).pushReplacementNamed('/login');
+        Navigator.of(context).pushNamedAndRemoveUntil('/login', (route) => false);
       } catch (e) {
         Navigator.of(context).pop(); // Fermer l'indicateur de chargement
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erreur lors de la suppression du compte: $e')),
-        );
+        _showErrorSnackBar(context, 'Erreur lors de la suppression du compte: $e');
       }
     }
+  }
+
+  // Afficher un indicateur de chargement
+  void _showLoadingDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => const Center(
+        child: CircularProgressIndicator(), // Indicateur de chargement
+      ),
+    );
+  }
+
+  // Afficher un message d'erreur
+  void _showErrorSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.red,
+      ),
+    );
+  }
+
+  // Afficher un message de succès
+  void _showSuccessSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.green,
+      ),
+    );
   }
 
   @override
@@ -115,16 +133,6 @@ class AccountScreen extends StatelessWidget {
     final User? user = FirebaseAuth.instance.currentUser;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Mon Compte',
-          style: TextStyle(
-            fontFamily: 'Times New Roman', // Police Times New Roman
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
-      ),
       body: Center(
         child: SingleChildScrollView(
           child: Padding(
@@ -133,6 +141,17 @@ class AccountScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
+                // Titre déplacé dans le body
+                const Text(
+                  'Mon Compte',
+                  style: TextStyle(
+                    fontFamily: 'Times New Roman', // Police Times New Roman
+                    fontWeight: FontWeight.bold,
+                    fontSize: 24, // Taille de la police
+                  ),
+                ),
+                const SizedBox(height: 20),
+
                 // Animation de la photo de profil
                 CircleAvatar(
                   backgroundImage: themeProvider.profilePhotoUrl != null
@@ -152,54 +171,18 @@ class AccountScreen extends StatelessWidget {
 
                 // Animation du nom de l'utilisateur
                 if (user != null) ...[
-                  Card(
-                    elevation: 4,
-                    margin: const EdgeInsets.symmetric(vertical: 10),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.person, color: Color.fromARGB(255, 27, 86, 90)),
-                          const SizedBox(width: 10),
-                          Text(
-                            user.displayName ?? 'No Name',
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                      .animate()
-                      .fadeIn(duration: 500.ms)
-                      .slide(begin: Offset(-1, 0)), // Slide depuis la gauche
+                  _buildUserInfoCard(
+                    icon: Icons.person,
+                    label: user.displayName ?? 'No Name',
+                    color: Color.fromARGB(255, 27, 86, 90),
+                  ).animate().fadeIn(duration: 500.ms).slide(begin: Offset(-1, 0)), // Slide depuis la gauche
 
                   // Animation de l'email de l'utilisateur
-                  Card(
-                    elevation: 4,
-                    margin: const EdgeInsets.symmetric(vertical: 10),
-                    child: Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.email, color: Color.fromARGB(255, 27, 86, 90)),
-                          const SizedBox(width: 10),
-                          Text(
-                            user.email ?? 'No Email',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  )
-                      .animate()
-                      .fadeIn(duration: 500.ms)
-                      .slide(begin: Offset(1, 0)), // Slide depuis la droite
+                  _buildUserInfoCard(
+                    icon: Icons.email,
+                    label: user.email ?? 'No Email',
+                    color: Colors.grey,
+                  ).animate().fadeIn(duration: 500.ms).slide(begin: Offset(1, 0)), // Slide depuis la droite
                 ],
 
                 const SizedBox(height: 20),
@@ -251,6 +234,34 @@ class AccountScreen extends StatelessWidget {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  // Fonction pour construire une carte d'informations utilisateur
+  Widget _buildUserInfoCard({
+    required IconData icon,
+    required String label,
+    required Color color,
+  }) {
+    return Card(
+      elevation: 4,
+      margin: const EdgeInsets.symmetric(vertical: 10),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Row(
+          children: [
+            Icon(icon, color: color),
+            const SizedBox(width: 10),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 16,
+                color: color,
+              ),
+            ),
+          ],
         ),
       ),
     );
