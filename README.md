@@ -129,8 +129,8 @@ Ce projet est sous licence [MIT](LICENSE).
 
 Pour toute question ou suggestion, contactez-nous à :
 - **Email** :<br>           
-        [ benitojunior2022@gmail.com](benitojunior2022@gmail.com) <br>
-        [mike2377@gmail.com](mike2377@gmail.com)
+        [benitojunior2022@gmail.com](mailto:benitojunior2022@gmail.com). <br><br>
+        [mike2377@gmail.com](mailto:mike2377@gmail.com)
 
 
 - **GitHub** : [PersonalExpensesApp](https://github.com/mike2377/personalexpenses)
